@@ -1,0 +1,32 @@
+version: '3.8'
+
+# Development compose - for running with hot reload
+# Use: docker-compose -f docker-compose.dev.yml up
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile.dev
+    container_name: event-feedback-hub-api-dev
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - HOST=0.0.0.0
+      - JWT_SECRET=dev-secret
+      - ADMIN_PASSWORD=admin123
+      - CORS_ORIGIN=http://localhost:5173
+      - LOG_LEVEL=debug
+    volumes:
+      - ./packages/api/src:/app/packages/api/src
+      - ./packages/shared/src:/app/packages/shared/src
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service"
+    labels:
+      - "service=event-feedback-hub-api"

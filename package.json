@@ -1,0 +1,17 @@
+{
+  "name": "event-feedback-hub",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "dev:api": "pnpm --filter @event-feedback-hub/api dev",
+    "dev:frontend": "pnpm --filter @event-feedback-hub/frontend dev",
+    "build": "pnpm run --parallel build",
+    "lint": "pnpm run --parallel lint",
+    "clean": "pnpm run --parallel clean"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
