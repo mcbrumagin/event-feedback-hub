@@ -9,7 +9,12 @@
     "dev:frontend": "pnpm --filter @event-feedback-hub/frontend dev",
     "build": "pnpm run --parallel build",
     "lint": "pnpm run --parallel lint",
-    "clean": "pnpm run --parallel clean"
+    "clean": "pnpm run --parallel clean",
+    "test": "pnpm run --parallel test",
+    "test:api": "pnpm --filter @event-feedback-hub/api test",
+    "test:frontend": "pnpm --filter @event-feedback-hub/frontend test",
+    "test:watch": "pnpm run --parallel test:watch",
+    "test:coverage": "pnpm run --parallel test:coverage"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
