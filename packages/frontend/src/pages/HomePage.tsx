@@ -19,7 +19,7 @@ export function HomePage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [feedbacks, setFeedbacks] = useState<(Feedback & { event: Event })[]>([]);
   const [newFeedbackIds, setNewFeedbackIds] = useState<Set<string>>(new Set());
-  const [ratingFilter, setRatingFilter] = useState<number | null>(null);
+  const [enabledRatings, setEnabledRatings] = useState<Set<number>>(new Set([1, 2, 3, 4, 5]));
   
   // Form state
   const [feedbackText, setFeedbackText] = useState('');
@@ -45,13 +45,12 @@ export function HomePage() {
     loadEvents();
   }, []);
 
-  // Load feedbacks when event or filter changes
+  // Load feedbacks when event changes (filter client-side for multi-select)
   useEffect(() => {
     async function loadFeedbacks() {
       if (!selectedEventId) return;
       try {
         const data = await fetchFeedbacks(selectedEventId, {
-          ratingFilter: ratingFilter ?? undefined,
           limit: 50,
         });
         setFeedbacks(data);
@@ -60,15 +59,32 @@ export function HomePage() {
       }
     }
     loadFeedbacks();
-  }, [selectedEventId, ratingFilter]);
+  }, [selectedEventId]);
+
+  // Filter feedbacks client-side based on enabled ratings
+  const filteredFeedbacks = feedbacks.filter(f => enabledRatings.has(f.rating));
+
+  // Toggle a single rating filter
+  const toggleRating = (rating: number) => {
+    setEnabledRatings(prev => {
+      const next = new Set(prev);
+      if (next.has(rating)) {
+        next.delete(rating);
+      } else {
+        next.add(rating);
+      }
+      return next;
+    });
+  };
+
+  // Select all ratings
+  const selectAll = () => setEnabledRatings(new Set([1, 2, 3, 4, 5]));
+  
+  // Clear all ratings
+  const clearAll = () => setEnabledRatings(new Set());
 
   // Handle new feedback from SSE
   const handleNewFeedback = useCallback((feedback: Feedback) => {
-    // Only add if matches current filter
-    if (ratingFilter !== null && feedback.rating !== ratingFilter) {
-      return;
-    }
-    
     // Find the event for this feedback
     const event = events.find(e => e.id === feedback.eventId);
     
@@ -98,7 +114,7 @@ export function HomePage() {
         return next;
       });
     }, 3000);
-  }, [ratingFilter, events]);
+  }, [events]);
 
   // SSE connection
   const { isConnected } = useSSE({
@@ -133,7 +149,7 @@ export function HomePage() {
   const selectedEvent = events.find(e => e.id === selectedEventId);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background p-4">
       {/* Decorative background */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
@@ -142,7 +158,7 @@ export function HomePage() {
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
-        <header className="mb-8 animate-fade-in">
+        <header className="mb-6 animate-fade-in">
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Event Feedback Hub
           </h1>
@@ -151,6 +167,33 @@ export function HomePage() {
           </p>
         </header>
 
+        {/* Event Selector - applies to both submit and live feedback */}
+        <div className="mb-6 animate-fade-in" style={{ animationDelay: '50ms' }}>
+          <Label htmlFor="event" className="text-sm text-muted-foreground mb-2 block">
+            Select Event
+          </Label>
+          <Select
+            value={selectedEventId ?? ''}
+            onValueChange={setSelectedEventId}
+          >
+            <SelectTrigger id="event" className="max-w-md">
+              <SelectValue placeholder="Select an event" />
+            </SelectTrigger>
+            <SelectContent>
+              {events.map((event) => (
+                <SelectItem key={event.id} value={event.id}>
+                  <span className="flex items-center gap-2">
+                    {event.name}
+                    {event.isPast && (
+                      <span className="text-xs text-muted-foreground">(past)</span>
+                    )}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Left column - Submit feedback */}
           <div className="space-y-6">
@@ -158,35 +201,11 @@ export function HomePage() {
               <CardHeader>
                 <CardTitle className="text-xl">Submit Feedback</CardTitle>
                 <CardDescription>
-                  Select an event and share your experience
+                  {selectedEvent ? `Share your experience for ${selectedEvent.name}` : 'Select an event above to submit feedback'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="event">Event</Label>
-                    <Select
-                      value={selectedEventId ?? ''}
-                      onValueChange={setSelectedEventId}
-                    >
-                      <SelectTrigger id="event">
-                        <SelectValue placeholder="Select an event" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {events.map((event) => (
-                          <SelectItem key={event.id} value={event.id}>
-                            <span className="flex items-center gap-2">
-                              {event.name}
-                              {event.isPast && (
-                                <span className="text-xs text-muted-foreground">(past)</span>
-                              )}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
                   <div className="space-y-2">
                     <Label>Rating</Label>
                     <StarRating
@@ -232,17 +251,10 @@ export function HomePage() {
             <Card className="animate-fade-in" style={{ animationDelay: '200ms' }}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl flex items-center gap-2">
-                      <Radio className="h-5 w-5 text-primary" />
-                      Live Feedback
-                    </CardTitle>
-                    {selectedEvent && (
-                      <CardDescription className="mt-1">
-                        {selectedEvent.name}
-                      </CardDescription>
-                    )}
-                  </div>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Radio className="h-5 w-5 text-primary" />
+                    Live Feedback
+                  </CardTitle>
                   <div className="flex items-center gap-2 text-sm">
                     {isConnected ? (
                       <>
@@ -259,29 +271,39 @@ export function HomePage() {
                 </div>
               </CardHeader>
               <CardContent>
-                {/* Rating filter */}
+                {/* Rating filter - toggleable multi-select */}
                 <div className="mb-4">
                   <Label className="text-xs text-muted-foreground mb-2 block">
-                    Filter by rating
+                    Filter by rating (click to toggle)
                   </Label>
                   <div className="flex gap-2">
                     <Button
-                      variant={ratingFilter === null ? 'default' : 'outline'}
+                      variant="outline"
                       size="sm"
-                      onClick={() => setRatingFilter(null)}
+                      onClick={selectAll}
+                      disabled={enabledRatings.size === 5}
                     >
                       All
                     </Button>
                     {[5, 4, 3, 2, 1].map((rating) => (
                       <Button
                         key={rating}
-                        variant={ratingFilter === rating ? 'default' : 'outline'}
+                        variant={enabledRatings.has(rating) ? 'default' : 'outline'}
                         size="sm"
-                        onClick={() => setRatingFilter(rating)}
+                        onClick={() => toggleRating(rating)}
+                        className={!enabledRatings.has(rating) ? 'opacity-50' : ''}
                       >
                         {rating}★
                       </Button>
                     ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearAll}
+                      disabled={enabledRatings.size === 0}
+                    >
+                      Clear
+                    </Button>
                   </div>
                 </div>
 
@@ -291,9 +313,13 @@ export function HomePage() {
                     <p className="text-center text-muted-foreground py-8">
                       No feedback yet. Be the first to share!
                     </p>
+                  ) : filteredFeedbacks.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No feedback matches the selected filters
+                    </p>
                   ) : (
                     <div className="animate-stagger">
-                      {feedbacks.map((feedback) => (
+                      {filteredFeedbacks.map((feedback) => (
                         <div key={feedback.id} className="mb-3">
                           <FeedbackCard
                             feedback={feedback}

@@ -77,9 +77,9 @@ await app.register(jwt, {
 // Register Mercurius (GraphQL)
 await app.register(mercurius, {
   schema,
-  resolvers: createResolvers(repository),
+  resolvers: createResolvers(repository) as never, // Type assertion needed due to custom context
   graphiql: isDev, // Enable GraphiQL in development
-  context: async (request): Promise<Omit<GraphQLContext, 'app' | 'repository'>> => {
+  context: async (request) => {
     // Check for admin JWT in Authorization header
     let isAdmin = false;
     
@@ -101,8 +101,9 @@ await app.register(mercurius, {
 
 // Extend context with app and repository
 app.graphql.addHook('preExecution', async (schema, document, context) => {
-  (context as GraphQLContext).app = app;
-  (context as GraphQLContext).repository = repository;
+  const ctx = context as unknown as GraphQLContext;
+  ctx.app = app;
+  ctx.repository = repository;
   return { schema, document, context };
 });
 

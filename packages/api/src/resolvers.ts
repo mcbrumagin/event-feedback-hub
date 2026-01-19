@@ -1,8 +1,9 @@
 import type { FastifyInstance } from 'fastify';
+import type { MercuriusContext } from 'mercurius';
 import type { Repository } from './repository/types.js';
 
-// Context type for resolvers
-export interface GraphQLContext {
+// Extended context type for resolvers - extends MercuriusContext for compatibility
+export interface GraphQLContext extends MercuriusContext {
   app: FastifyInstance;
   repository: Repository;
   isAdmin: boolean;

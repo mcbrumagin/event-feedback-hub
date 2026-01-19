@@ -124,7 +124,7 @@ export function AdminPage() {
 
   // Admin dashboard
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background p-4">
       {/* Decorative background */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />

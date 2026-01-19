@@ -7,7 +7,7 @@ RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 WORKDIR /app
 
 # Copy workspace configuration
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/api/package.json ./packages/api/
 
@@ -30,8 +30,8 @@ RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 WORKDIR /app
 
-# Copy workspace configuration
-COPY package.json pnpm-workspace.yaml ./
+# Copy workspace configuration (including lock file)
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/api/package.json ./packages/api/
 

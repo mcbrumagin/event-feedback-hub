@@ -32,9 +32,9 @@ export async function buildTestApp(): Promise<TestApp> {
 
   await app.register(mercurius, {
     schema,
-    resolvers: createResolvers(repository),
+    resolvers: createResolvers(repository) as never, // Type assertion needed due to custom context
     graphiql: false,
-    context: async (request): Promise<Omit<GraphQLContext, 'app' | 'repository'>> => {
+    context: async (request) => {
       let isAdmin = false;
       
       const authHeader = request.headers.authorization;
@@ -53,8 +53,9 @@ export async function buildTestApp(): Promise<TestApp> {
   });
 
   app.graphql.addHook('preExecution', async (schema, document, context) => {
-    (context as GraphQLContext).app = app;
-    (context as GraphQLContext).repository = repository;
+    const ctx = context as unknown as GraphQLContext;
+    ctx.app = app;
+    ctx.repository = repository;
     return { schema, document, context };
   });
 

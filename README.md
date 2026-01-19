@@ -7,9 +7,9 @@ A real-time event feedback system built with React, Fastify, GraphQL (Mercurius)
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │    Frontend     │     │      API        │     │    Database     │
-│  React + TS     │───▶│ Fastify +       │───▶│  In-Memory      │
+│  React + TS     │────▶│ Fastify +       │────▶│  In-Memory      │
 │  (Port 5173)    │     │ Mercurius       │     │  → MongoDB      │
-│                 │◀───│  (Port 4000)    │◀───│                 │
+│                 │◀────│  (Port 4000)    │◀────│                 │
 │   SSE Client    │ SSE │   SSE Server    │watch│                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
@@ -24,7 +24,7 @@ A real-time event feedback system built with React, Fastify, GraphQL (Mercurius)
 
 ## Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui components
+- **Frontend**: React 19, TypeScript, Vite 7, Tailwind CSS, shadcn/ui components
 - **API**: Fastify, Mercurius (GraphQL), pino (logging)
 - **Auth**: JWT (hard-coded admin password for development)
 - **Real-time**: Server-Sent Events (SSE)
@@ -98,7 +98,7 @@ docker-compose -f docker-compose.dev.yml up --build
 ```
 
 Access:
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:5137 (vite)
 - API: http://localhost:4000
 
 ## API
@@ -155,11 +155,19 @@ type Mutation {
 | `LOG_LEVEL` | Logging level | `info` |
 | `CORS_ORIGIN` | Allowed CORS origin | `http://localhost:5173` |
 
-## Future Enhancements
+## Roadmap
 
+### For Version 1
 - [ ] MongoDB persistence with change streams for SSE
-- [ ] User authentication (beyond admin)
-- [ ] Feedback moderation
+- [ ] Research graphql-sse vs current live feedback implementation
+- [ ] Versioned graphql API for better longterm support across applications
+- [ ] Social authentication for attendees - limit 1 review per event per attendee
+- [ ] Proper admin page and 1-way password encryption for event hosts
+- [ ] Sysadmin(s) to easily create/manage event admins
+
+### Horizon Features
+- [ ] Feedback moderation and automatic profanity filtering
+- [ ] Optional event sign-in required to review as an attendee (QR code at event)
 - [ ] Event analytics/dashboard
 - [ ] Email notifications
 - [ ] Export feedback reports

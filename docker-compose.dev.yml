@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Development compose - for running with hot reload
 # Use: docker-compose -f docker-compose.dev.yml up
 
