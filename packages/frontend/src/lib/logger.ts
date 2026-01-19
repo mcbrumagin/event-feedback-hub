@@ -10,7 +10,7 @@ export const logger = pino({
     asObject: true,
     transmit: {
       level: 'error',
-      send: (level, logEvent) => {
+      send: (_level, logEvent) => {
         // In production, you could send logs to a logging service
         // For now, we just console them in structured format
         if (!isDev) {
