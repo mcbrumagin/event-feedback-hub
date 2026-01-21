@@ -7,9 +7,9 @@ A real-time event feedback system built with React, Fastify, GraphQL (Mercurius)
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │    Frontend     │     │      API        │     │    Database     │
-│  React + TS     │────▶│ Fastify +       │────▶│  In-Memory      │
+│  React + TS     │────>│ Fastify +       │────>│  In-Memory      │
 │  (Port 5173)    │     │ Mercurius       │     │  → MongoDB      │
-│                 │◀────│  (Port 4000)    │◀────│                 │
+│                 │<────│  (Port 4000)    │<────│                 │
 │   SSE Client    │ SSE │   SSE Server    │watch│                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
